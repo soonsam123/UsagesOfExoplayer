@@ -1,53 +1,160 @@
 package com.soon.karat.exoplayer;
 
-import android.os.Handler;
+import android.Manifest;
+import android.app.Dialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Environment;
+import android.provider.Settings;
+import android.support.annotation.NonNull;
+import android.support.constraint.ConstraintLayout;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.AppCompatButton;
+import android.view.View;
+import android.widget.Toast;
 
-import com.google.android.exoplayer2.ExoPlayer;
-import com.google.android.exoplayer2.ExoPlayerFactory;
-import com.google.android.exoplayer2.SimpleExoPlayer;
-import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
-import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.google.android.exoplayer2.trackselection.TrackSelection;
-import com.google.android.exoplayer2.trackselection.TrackSelector;
-import com.google.android.exoplayer2.ui.PlayerView;
-import com.google.android.exoplayer2.upstream.BandwidthMeter;
-import com.google.android.exoplayer2.upstream.DataSource;
-import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
-import com.google.android.exoplayer2.util.Util;
 
-public class MainActivity extends AppCompatActivity {
+import java.io.File;
 
-    private static final String APPLICATION_NAME = "Exoplayer";
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+
+    private static final int GALLERY_REQUEST_CODE = 98;
+    private static final int PERMISSIONS_REQUEST_WRITE_EXTERNAL = 107;
+    private static final int SETTINGS_REQUEST_CODE = 82;
+
+    private ConstraintLayout mContainer;
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == PERMISSIONS_REQUEST_WRITE_EXTERNAL) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                openGallery(Environment.DIRECTORY_MOVIES, GALLERY_REQUEST_CODE);
+            } else {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    displaySnackBarToVerifyPermissions();
+                } else {
+                    displayDialogToGoToSettings();
+                }
+            }
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        // -------------------------------------------------------------------
+        //                  1. Coming back from the Gallery
+        // -------------------------------------------------------------------
+        if (requestCode == GALLERY_REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
+
+                Uri videoUri = data.getData();
+
+                if (videoUri != null) {
+                    Intent videoPlayerIntent = new Intent(this, VideoPlayerActivity.class);
+                    videoPlayerIntent.putExtra("videoUri", videoUri.toString());
+                    startActivity(videoPlayerIntent);
+                } else {
+                    Toast.makeText(this, "Video not found", Toast.LENGTH_LONG).show();
+                }
+            }
+        }
+
+        // -------------------------------------------------------------------
+        //                    2. Coming back from Settings
+        // -------------------------------------------------------------------
+        if (requestCode == SETTINGS_REQUEST_CODE) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED) {
+                openGallery(Environment.DIRECTORY_MOVIES, GALLERY_REQUEST_CODE);
+            }
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // 1. Create a default TrackSelector
-        Handler mainHandler = new Handler();
-        BandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
-        TrackSelection.Factory videoTrackSelectionFactory = new AdaptiveTrackSelection.Factory(bandwidthMeter);
-        TrackSelector trackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
+        mContainer = findViewById(R.id.constraint_layout_container);
 
-        // 2. Create the player
-        SimpleExoPlayer player = ExoPlayerFactory.newSimpleInstance(this, trackSelector);
+        AppCompatButton mPickVideo = findViewById(R.id.button_pick_video);
+        mPickVideo.setOnClickListener(this);
 
-        // 3. Attach the player to a view
-        PlayerView mPlayerView = findViewById(R.id.player_view);
-        mPlayerView.setPlayer(player);
 
-        // 4. Preparing the player
-        // 4.1. Measures bandwidth during playback. Can be null if not required.
-        DefaultBandwidthMeter defaultBandwidthMeter = new DefaultBandwidthMeter();
-
-        // 4.2. Produces DataSource instances through which media data is loaded.
-        DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this,
-                Util.getUserAgent(this, APPLICATION_NAME), defaultBandwidthMeter);
-
-        // 4.3.
     }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.button_pick_video:
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        == PackageManager.PERMISSION_GRANTED) {
+                    openGallery(Environment.DIRECTORY_MOVIES, GALLERY_REQUEST_CODE);
+                } else {
+                    ActivityCompat.requestPermissions(this,
+                            new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSIONS_REQUEST_WRITE_EXTERNAL);
+                }
+                break;
+        }
+    }
+
+
+    /**
+     * Open the Gallery.
+     * @param directory the directory we want to open.
+     * @param imageGalleryRequest the REQUEST_CODE when returning back from the gallery to the activity.
+     */
+    public void openGallery(String directory, int imageGalleryRequest) {
+
+        Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+
+        File pictureDirectory = Environment.getExternalStoragePublicDirectory(directory);
+        String pictureDirectoryPath = pictureDirectory.getPath();
+
+        Uri pictureData = Uri.parse(pictureDirectoryPath);
+
+        photoPickerIntent.setDataAndType(pictureData, "video/*");
+
+        startActivityForResult(photoPickerIntent, imageGalleryRequest);
+    }
+
+    private void displaySnackBarToVerifyPermissions() {
+        Snackbar snackbar = Snackbar.make(mContainer,
+                R.string.msg_allow_permission_to_gallery, Snackbar.LENGTH_LONG);
+        snackbar.setAction(R.string.action_verify, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ActivityCompat.requestPermissions(MainActivity.this,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSIONS_REQUEST_WRITE_EXTERNAL);
+            }
+        }).show();
+    }
+
+    private void displayDialogToGoToSettings() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.msg_allow_permission_in_settings)
+                .setPositiveButton(R.string.preferences_settings, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent settingsIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                        Uri uri = Uri.fromParts("package", getPackageName(), null);
+                        settingsIntent.setData(uri);
+                        startActivityForResult(settingsIntent, SETTINGS_REQUEST_CODE);
+                    }
+                })
+                .setNegativeButton(R.string.action_not_now, null);
+        Dialog dialog = builder.create();
+        dialog.show();
+    }
+
 }

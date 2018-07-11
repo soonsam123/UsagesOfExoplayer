@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">Exoplayer</string>
+
+    <string name="action_pick_a_video">Pick a video</string>
+    <string name="action_verify">Verify</string>
+    <string name="action_not_now">Not now</string>
+
+    <string name="msg_allow_permission_to_gallery">Allow ExoPlayer to access your gallery to send videos</string>
+    <string name="msg_allow_permission_in_settings">You need to allow us to access your gallery in order to send video.Go to Settings > Permissions > Check Storage</string>
+
+    <string name="preferences_settings">Settings</string>
 </resources>
