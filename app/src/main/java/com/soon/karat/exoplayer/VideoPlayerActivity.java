@@ -23,6 +23,35 @@ import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 
+/**
+ * Android 7.0 (Nougat) and higher support multi-window mode. When the activity
+ * enters in multi-window mode and the focus is in other application, our
+ * application will call {@link #onPause()} method.
+ * </p>
+ * <h4>Descriptions</h4>
+ * Utils.SDK_INT > 23 : API level 24/Android 7.0/Nougat or higher.
+ * Utils.SDK_INT <= 23 : API level 23/Android 6.0/Marshmallow or lower.
+ *
+ * <h3>The activity is FINISHING</h3>
+ *
+ * Case 1. Utils.SDK_INT > 23: we should NOT release the player when it enters
+ * in {@link #onPause()} as the user may want to watch the video in multi-window mode.
+ * Then, we let to release it only in {@link #onStop()} method.
+ * </p>
+ * Case 2. Utils.SDK_INT <= 23: we should release the player when it enters in
+ * {@link #onPause()} method.
+ * </p>
+ *
+ * <h3>The activity is STARTING/h3>
+ *
+ * Case 1. Utils.SDK_INT > 23: We should initialize the player in {@link #onStart()}
+ * method, as when the app calls {@link #onResume()} the player will be already there
+ * since it was not released in the {@link #onPause()} method.
+ * </p>
+ * Case 2. Utils.SDK_INT <= 23: We should initialize the player in {@link #onResume()}
+ * method, since it was released in {@link #onPause()} method.
+ * </p>
+ */
 public class VideoPlayerActivity extends AppCompatActivity {
 
     private static final String TAG = "VideoPlayerActivity";
