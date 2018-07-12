@@ -33,7 +33,8 @@ MediaSource videoSource = new ExtractorMediaSource.Factory(dataSourceFactory)
         MediaSource thirdSource = new ExtractorMediaSource.Factory(dataSourceFactory)
                 .createMediaSource(videoUriList.get(2));
 
-        // Concatenate the three videos to play them in sequence. When first video finish, second will play and so on.
+        // Concatenate the three videos to play them in sequence. 
+        // When first video finish, second will play and so on.
         ConcatenatingMediaSource playlistSource = 
                 new ConcatenatingMediaSource(firstSource, secondSource, thirdSource);
 ```
