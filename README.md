@@ -12,7 +12,7 @@ When you click the button the following code will be runned, the code will handl
 In the button click
 
 
-'''
+```
 @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -27,4 +27,4 @@ In the button click
                 break;
         }
     }
-'''
+```
