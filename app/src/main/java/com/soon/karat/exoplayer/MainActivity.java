@@ -9,7 +9,6 @@ import android.net.Uri;
 import android.os.Environment;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
-import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -18,10 +17,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.AppCompatButton;
 import android.view.View;
-import android.widget.Toast;
+import android.widget.LinearLayout;
+import android.widget.RadioGroup;
 
 
 import java.io.File;
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -29,7 +30,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int PERMISSIONS_REQUEST_WRITE_EXTERNAL = 107;
     private static final int SETTINGS_REQUEST_CODE = 82;
 
-    private ConstraintLayout mContainer;
+    private LinearLayout mContainer;
+    private RadioGroup mRadioGroup;
+
+    private ArrayList<String> playListUrisToString;
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -57,15 +61,54 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (requestCode == GALLERY_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
 
-                Uri videoUri = data.getData();
-
-                if (videoUri != null) {
+                // 1.1. _________ Play a single video __________
+                if (mRadioGroup.getCheckedRadioButtonId() == R.id.radio_button_single_video) {
+                    Uri videoUri = data.getData();
+                    assert videoUri != null;
                     Intent videoPlayerIntent = new Intent(this, VideoPlayerActivity.class);
                     videoPlayerIntent.putExtra("videoUri", videoUri.toString());
                     startActivity(videoPlayerIntent);
-                } else {
-                    Toast.makeText(this, "Video not found", Toast.LENGTH_LONG).show();
                 }
+
+                // 1.2. _________ Play a playlist of videos __________
+                // This playlist will play 3 videos in sequence.
+                // 1) The user need to select 3 videos that will be stored in playListUrisToString;
+                // 2) playListUrisToString wil store the Uris of the three videos in format of String;
+                // 3) When the list has already 3 videos, it will navigate to VideoPlayListActivity;
+                else if (mRadioGroup.getCheckedRadioButtonId() == R.id.radio_button_playlist) {
+                    Uri videoUri = data.getData();
+                    assert videoUri != null;
+                    playListUrisToString.add(videoUri.toString());
+
+                    if (playListUrisToString.size() == 3) { // 3 videos was already picked.
+                        Intent videoPlaylistIntent = new Intent(this, VideoPlaylistActivity.class);
+                        videoPlaylistIntent.putStringArrayListExtra("videoUriList", playListUrisToString);
+                        startActivity(videoPlaylistIntent);
+                    } else { // videos are still left to complete 3.
+                        openGallery(Environment.DIRECTORY_MOVIES, GALLERY_REQUEST_CODE);
+                    }
+
+                }
+
+                // 1.3. _________ Play just a part of a single video __________
+                // This will play from 00:10 --> 00:15 seconds of a video. Please upload a video bigger than 16 seconds.
+                else if (mRadioGroup.getCheckedRadioButtonId() == R.id.radio_button_clipping) {
+                    Uri videoUri = data.getData();
+                    assert videoUri != null;
+                    Intent videoClippingIntent = new Intent(this, VideoClippingActivity.class);
+                    videoClippingIntent.putExtra("videoUri", videoUri.toString());
+                    startActivity(videoClippingIntent);
+                }
+
+                // 1.4. _________ Play a single video 5 times __________
+                else if (mRadioGroup.getCheckedRadioButtonId() == R.id.radio_button_looping) {
+                    Uri videoUri = data.getData();
+                    assert videoUri != null;
+                    Intent videoLoopingIntent = new Intent(this, VideoLoopingActivity.class);
+                    videoLoopingIntent.putExtra("videoUri", videoUri.toString());
+                    startActivity(videoLoopingIntent);
+                }
+
             }
         }
 
@@ -85,7 +128,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mContainer = findViewById(R.id.constraint_layout_container);
+        mContainer = findViewById(R.id.linear_layout_container);
+        mRadioGroup = findViewById(R.id.radio_group);
+        playListUrisToString = new ArrayList<>();
 
         AppCompatButton mPickVideo = findViewById(R.id.button_pick_video);
         mPickVideo.setOnClickListener(this);

@@ -4,9 +4,16 @@
     <string name="action_pick_a_video">Pick a video</string>
     <string name="action_verify">Verify</string>
     <string name="action_not_now">Not now</string>
+    <string name="action_play_a_single_video">Play a single video</string>
+    <string name="action_play_a_playlist">Play a playlist</string>
+    <string name="action_clipping_a_video_this_will_play_only_5_seconds">Clipping a video, this will play only 5 seconds</string>
+    <string name="action_loop_a_video_5_times">Loop a video 5 times</string>
+
+    <string name="preferences_settings">Settings</string>
 
     <string name="msg_allow_permission_to_gallery">Allow ExoPlayer to access your gallery to send videos</string>
     <string name="msg_allow_permission_in_settings">You need to allow us to access your gallery in order to send video.Go to Settings > Permissions > Check Storage</string>
 
-    <string name="preferences_settings">Settings</string>
+    <string name="question_what_do_you_want_to_play">What do you want to play?</string>
+
 </resources>

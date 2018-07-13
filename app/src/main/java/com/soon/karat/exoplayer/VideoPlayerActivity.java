@@ -1,13 +1,10 @@
 package com.soon.karat.exoplayer;
 
-import android.arch.lifecycle.ViewModel;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.SimpleExoPlayer;
@@ -51,12 +48,25 @@ import com.google.android.exoplayer2.util.Util;
  * Case 2. Utils.SDK_INT <= 23: We should initialize the player in {@link #onResume()}
  * method, since it was released in {@link #onPause()} method.
  * </p>
+ *
+ * <h3>Android Developers Guide - Building a video player activity</h3>
+ *
+ * https://developer.android.com/guide/topics/media-apps/video-app/building-a-video-player-activity
+ * When an app is closed, the activity receives the onPause() and onStop() callbacks in succession.
+ * If the player is playing, you must stop it before its activity goes away. The choice of which
+ * callback to use depends on what Android version you're running.
+ * </p>
+ * In Android 6.0 (API level 23) and earlier there is no guarantee of when {@link #onStop()} method
+ * is called; it could get called 5 seconds after your activity disappears. Therefore, in Android
+ * versions earlier than 7.0, your app should stop playback in {@link #onPause()}. In Android 7.0
+ * and beyond, the system calls {@link #onStop()} as soon as the activity becomes not visible,
+ * so this is not a problem.
+ * </p>
+ * To summarize:
+ * --> In Android version 6.0 and earlier, stop the player in the {@link #onPause()} callback.
+ * --> In Android version 7.0 and later, stop the player in the {@link #onStop()} callback.
  */
 public class VideoPlayerActivity extends AppCompatActivity {
-
-    private static final String TAG = "VideoPlayerActivity";
-    
-    private static final String APPLICATION_NAME = "Exoplayer";
 
     private Uri videoUri;
     private SimpleExoPlayer player;
@@ -66,7 +76,6 @@ public class VideoPlayerActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_video_player);
-        Log.i(TAG, "onCreate: CREATING");
 
         // 1. Get the video URI from MainActivity.
         Intent intent = getIntent();
@@ -78,30 +87,23 @@ public class VideoPlayerActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        Log.i(TAG, "onStart: STARTING");
         if (Util.SDK_INT > 23) {
-            Log.i(TAG, "onStart: SDK_INT: " + Util.SDK_INT + " initializing in onStart");
-            initializePlayer(videoUri);
+            initializePlayer();
         }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        Log.i(TAG, "onResume: RESUMING");
-        // Version 23 or lower OR player have not being initialized yet.
         if (Util.SDK_INT <= 23 || player == null) {
-            Log.i(TAG, "onResume: SDK_INT: " + Util.SDK_INT + " initializing in onResume");
-            initializePlayer(videoUri);
+            initializePlayer();
         }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        Log.i(TAG, "onPause: PAUSING");
         if (Util.SDK_INT <= 23) {
-            Log.i(TAG, "onPause: SDK_INT: " + Util.SDK_INT + " releasing in onPause");
             releasePlayer();
         }
     }
@@ -109,27 +111,18 @@ public class VideoPlayerActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        Log.i(TAG, "onStop: STOPPING");
         if (Util.SDK_INT > 23) {
-            Log.i(TAG, "onStop: SDK_INT: " + Util.SDK_INT + " releasing in onStop");
             releasePlayer();
         }
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.i(TAG, "onDestroy: DESTROYING");
-    }
 
     /**
-     * Loads a video uri into a PlayerView usign MediaSource and SimpleExoPlayer.
-     * @param videoUri the uri of the video that will be loaded.
+     * Loads a single video Uri into a MediaSource and play this video using SimpleExoPlayer.
      */
-    private void initializePlayer(Uri videoUri) {
+    private void initializePlayer() {
 
         // 1. Create a default TrackSelector
-        Handler mainHandler = new Handler();
         BandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
         TrackSelection.Factory videoTrackSelectionFactory = new AdaptiveTrackSelection.Factory(bandwidthMeter);
         trackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
@@ -147,7 +140,7 @@ public class VideoPlayerActivity extends AppCompatActivity {
 
         // 4.2. Produces DataSource instances through which media data is loaded.
         DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this,
-                Util.getUserAgent(this, APPLICATION_NAME), defaultBandwidthMeter);
+                Util.getUserAgent(this, getString(R.string.app_name)), defaultBandwidthMeter);
 
         // 4.3. This is the MediaSource representing the media to be played.
         MediaSource videoSource = new ExtractorMediaSource.Factory(dataSourceFactory)
