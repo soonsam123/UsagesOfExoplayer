@@ -8,7 +8,7 @@ In MainActivity you can choose what you want to do. These are the options.
 3. Clipping a video, this will play only 5 seconds of the video;
 4. Loop a video 5 times.
 
-Select your options, then when you click in the Button "Pick a Video" you will redirected to your gallery, the code will handle the request permissions for WRITE_EXTERNAL_STORARGE in the following cases:
+First, select your option. Then click in the Button "Pick a Video" and you will be redirected to your gallery. The code will handle the request permissions for WRITE_EXTERNAL_STORAGE in the following cases:
 
 - When the user deny it: The app will display a snackbar showing the user he needs to give permissions to access the gallery.
 - When the user check never ask again and deny: The app will display a dialog which the user can navigate to settings.
