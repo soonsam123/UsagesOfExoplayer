@@ -9,10 +9,11 @@ import android.util.Log;
 import android.view.Surface;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.android.exoplayer2.ExoPlaybackException;
-import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.PlaybackParameters;
@@ -28,6 +29,7 @@ import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.google.android.exoplayer2.ui.PlayerControlView;
 import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
@@ -50,6 +52,9 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
     private ImageButton mLike;
     private ImageButton mShare;
     private ImageButton mFullscreen;
+
+    private LinearLayout mPlayPauseLayout;
+    private ProgressBar mProgressBar;
 
     private long playbackPosition;
     private int currentWindow;
@@ -111,6 +116,11 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
     }
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.image_button_back:
@@ -136,6 +146,9 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
         mLike = findViewById(R.id.image_button_like);
         mShare = findViewById(R.id.image_button_share);
         mFullscreen = findViewById(R.id.image_button_full_screen);
+
+        mPlayPauseLayout = findViewById(R.id.linear_layout_play_pause);
+        mProgressBar = findViewById(R.id.progress_bar);
     }
 
     private void setupClickListeners() {
@@ -171,9 +184,9 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
             currentWindow = player.getCurrentWindowIndex();
             playWhenReady = player.getPlayWhenReady();
             player.removeListener(componentListener);
-            player.setVideoListener(null);
-            player.setVideoDebugListener(null);
-            player.setAudioDebugListener(null);
+            player.addVideoListener(null);
+            player.addVideoDebugListener(null);
+            player.addAudioDebugListener(null);
             player.release();
             player = null;
             trackSelector = null;
@@ -199,7 +212,9 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
                 | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
     }
 
-    private class ComponentListener implements ExoPlayer.EventListener, VideoRendererEventListener, AudioRendererEventListener {
+
+
+    private class ComponentListener implements Player.EventListener, VideoRendererEventListener, AudioRendererEventListener {
         @Override
         public void onTimelineChanged(Timeline timeline, Object manifest, int reason) {
 
@@ -219,16 +234,22 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
         public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
             String stateString;
             switch (playbackState) {
-                case Player.STATE_IDLE:
+                case Player.STATE_IDLE: // The player does not have any media to play.
                     stateString = "Player.STATE_IDLE";
+                    mProgressBar.setVisibility(View.VISIBLE);
+                    mPlayerView.hideController();
                     break;
-                case Player.STATE_BUFFERING:
+                case Player.STATE_BUFFERING: // The player needs to load media before playing.
                     stateString = "Player.STATE_BUFFERING";
+                    mProgressBar.setVisibility(View.VISIBLE);
+                    mPlayPauseLayout.setVisibility(View.GONE);
                     break;
-                case Player.STATE_READY:
+                case Player.STATE_READY: // The player is able to immediately play from its current position.
                     stateString = "Player.STATE_READY";
+                    mProgressBar.setVisibility(View.GONE);
+                    mPlayPauseLayout.setVisibility(View.VISIBLE);
                     break;
-                case Player.STATE_ENDED:
+                case Player.STATE_ENDED: // The player has finished playing the media.
                     stateString = "Player.STATE_ENDED";
                     break;
                 default:

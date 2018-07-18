@@ -7,7 +7,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <!-- !!! Do not change the ID of the items in this file
-         ExoPlayer use these ids to control the playbacks -->
+         ExoPlayer uses these ids to control the playbacks -->
 
     <!-- 1. Options in the TOP -->
     <android.support.constraint.ConstraintLayout
