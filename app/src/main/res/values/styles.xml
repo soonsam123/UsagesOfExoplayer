@@ -8,4 +8,12 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <!--
+    If you declare android:theme="PlayerTheme" in the Manifest,
+    the whole activity background will become black.
+    <style name="PlayerTheme" parent="Theme.AppCompat.Light">
+        <item name="android:windowBackground">@color/colorBlack</item>
+    </style>
+    -->
+
 </resources>

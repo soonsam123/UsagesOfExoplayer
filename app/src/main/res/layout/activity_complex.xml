@@ -22,7 +22,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:text="@string/msg_simple_examples"
+        android:text="@string/msg_complex_examples"
         android:layout_gravity="center_horizontal"/>
 
     <TextView
@@ -46,28 +46,10 @@
             android:layout_height="wrap_content"
             android:text="@string/action_play_a_single_video"/>
 
-        <RadioButton
-            android:id="@+id/radio_button_playlist"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/action_play_a_playlist"/>
-
-        <RadioButton
-            android:id="@+id/radio_button_clipping"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/action_clipping_a_video_this_will_play_only_5_seconds"/>
-
-        <RadioButton
-            android:id="@+id/radio_button_looping"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/action_loop_a_video_5_times"/>
-
     </RadioGroup>
 
     <android.support.v7.widget.AppCompatButton
-        android:id="@+id/button_pick_video"
+        android:id="@+id/button_play"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="40dp"
@@ -75,7 +57,7 @@
         android:layout_marginTop="40dp"
         android:background="@drawable/stroke_button"
         android:padding="10dp"
-        android:text="@string/action_pick_a_video"
+        android:text="@string/action_play"
         android:textColor="@color/colorWhite" />
 
 </LinearLayout>

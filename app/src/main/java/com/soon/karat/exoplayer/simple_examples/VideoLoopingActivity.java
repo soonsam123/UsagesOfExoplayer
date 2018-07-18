@@ -1,20 +1,20 @@
-package com.soon.karat.exoplayer;
+package com.soon.karat.exoplayer.simple_examples;
 
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.SimpleExoPlayer;
-import com.google.android.exoplayer2.source.ConcatenatingMediaSource;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
+import com.google.android.exoplayer2.source.LoopingMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
+import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.upstream.BandwidthMeter;
 import com.google.android.exoplayer2.upstream.DataSource;
@@ -23,33 +23,21 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 import com.soon.karat.exoplayer.R;
 
-import java.util.ArrayList;
+public class VideoLoopingActivity extends AppCompatActivity {
 
-public class VideoPlaylistActivity extends AppCompatActivity {
-
-    private ArrayList<String> videoUriToStringList;
-    private ArrayList<Uri> videoUriList; // This will store the three videos Uris.
+    private Uri videoUri;
 
     private SimpleExoPlayer player;
-    private DefaultTrackSelector trackSelector;
+    private TrackSelector trackSelector;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_video_playlist);
+        setContentView(R.layout.activity_video_looping);
 
-        videoUriToStringList = new ArrayList<>();
-        videoUriList = new ArrayList<>();
-
+        // 1. Get the Uri of the video from MainActivity.
         Intent intent = getIntent();
-        // This is the list of Uris, but they are stored as String in order to transport in the Intent.
-        videoUriToStringList = intent.getStringArrayListExtra("videoUriList");
-
-        // Convert the list of Strings to list of Uri.
-        for (String singleVideo : videoUriToStringList) {
-            videoUriList.add(Uri.parse(singleVideo));
-        }
-
+        videoUri = Uri.parse(intent.getStringExtra("videoUri"));
 
     }
 
@@ -86,8 +74,8 @@ public class VideoPlaylistActivity extends AppCompatActivity {
     }
 
     /**
-     * Loads three videos in a ConcatenatingMediaSource and play them in sequence
-     * using SimpleExoPlayer and PlayerView.
+     * Load a single video into a LoopingMediaSource and play it 5 times using
+     * SimpleExoPlayer and PlayerView.
      */
     private void initializePlayer() {
 
@@ -105,17 +93,14 @@ public class VideoPlaylistActivity extends AppCompatActivity {
         DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this,
                 Util.getUserAgent(this, getString(R.string.app_name)), defaultBandwidthMeter);
 
-        // Load each video into a separated MediaSource.
-        MediaSource firstSource = new ExtractorMediaSource.Factory(dataSourceFactory).createMediaSource(videoUriList.get(0));
-        MediaSource secondSource = new ExtractorMediaSource.Factory(dataSourceFactory).createMediaSource(videoUriList.get(1));
-        MediaSource thirdSource = new ExtractorMediaSource.Factory(dataSourceFactory).createMediaSource(videoUriList.get(2));
+        // Create the MediaSource of the video we choose.
+        MediaSource videoSource = new ExtractorMediaSource.Factory(dataSourceFactory).createMediaSource(videoUri);
 
-        // Concatenate the three videos to play them in sequence. When first video finish, second will play and so on.
-        ConcatenatingMediaSource playlistSource = new ConcatenatingMediaSource(firstSource, secondSource, thirdSource);
+        // Play this video 5 times.
+        LoopingMediaSource loopingMediaSource = new LoopingMediaSource(videoSource, 5);
 
-        player.prepare(playlistSource);
+        player.prepare(loopingMediaSource);
         player.setPlayWhenReady(true);
-
     }
 
     private void releasePlayer() {

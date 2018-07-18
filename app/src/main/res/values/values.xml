@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="ExoMediaButton.Play">
+        <item name="android:src">@drawable/ic_play</item>
+        <item name="android:contentDescription">@string/action_play</item>
+    </style>
+
+    <style name="LeafPlayerMediaButton.Back">
+        <item name="android:src">@drawable/ic_arrow_back</item>
+        <item name="android:contentDescription">@string/action_back</item>
+    </style>
+    <style name="LeafPlayerMediaButton.Like">
+        <item name="android:src">@drawable/ic_like</item>
+        <item name="android:contentDescription">@string/action_like</item>
+    </style>
+    <style name="LeafPlayerMediaButton.Share">
+        <item name="android:src">@drawable/ic_share</item>
+        <item name="android:contentDescription">@string/action_share</item>
+    </style>
+    <style name="LeafPlayerMediaButton.Fullscreen">
+        <item name="android:src">@drawable/ic_full_screen</item>
+        <item name="android:contentDescription">@string/action_full_screen</item>
+    </style>
+    <style name="LeafPlayerMediaButton">
+        <item name="android:background">?android:attr/selectableItemBackground</item>
+        <item name="android:layout_width">@dimen/leaf_player_media_button_width</item>
+        <item name="android:layout_height">@dimen/leaf_player_media_button_height</item>
+    </style>
+
+</resources>

@@ -1,4 +1,4 @@
-package com.soon.karat.exoplayer;
+package com.soon.karat.exoplayer.simple_examples;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -19,6 +19,7 @@ import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
+import com.soon.karat.exoplayer.R;
 
 /**
  * Android 7.0 (Nougat) and higher support multi-window mode. When the activity

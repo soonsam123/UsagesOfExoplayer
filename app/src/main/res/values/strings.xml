@@ -8,6 +8,12 @@
     <string name="action_play_a_playlist">Play a playlist</string>
     <string name="action_clipping_a_video_this_will_play_only_5_seconds">Clipping a video, this will play only 5 seconds</string>
     <string name="action_loop_a_video_5_times">Loop a video 5 times</string>
+    <string name="action_a_more_sophisticated_video_player">Play a more sophisticated video player</string>
+    <string name="action_play">Play</string>
+    <string name="action_back">Back</string>
+    <string name="action_like">Like</string>
+    <string name="action_share">Share</string>
+    <string name="action_full_screen">Full Screen</string>
 
     <string name="preferences_settings">Settings</string>
 
@@ -15,5 +21,11 @@
     <string name="msg_allow_permission_in_settings">You need to allow us to access your gallery in order to send video.Go to Settings > Permissions > Check Storage</string>
 
     <string name="question_what_do_you_want_to_play">What do you want to play?</string>
+
+    <string name="video_mp4">http://www.html5videoplayer.net/videos/toystory.mp4</string>
+    <string name="msg_simple_examples">Simple examples</string>
+    <string name="simple">Simple</string>
+    <string name="complex">Complex</string>
+    <string name="msg_complex_examples">Complex examples</string>
 
 </resources>

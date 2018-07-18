@@ -1,4 +1,4 @@
-package com.soon.karat.exoplayer;
+package com.soon.karat.exoplayer.simple_examples;
 
 import android.Manifest;
 import android.app.Dialog;
@@ -16,10 +16,17 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.AppCompatButton;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 
+
+import com.soon.karat.exoplayer.complex_examples.ComplexActivity;
+import com.soon.karat.exoplayer.R;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -31,6 +38,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int SETTINGS_REQUEST_CODE = 82;
 
     private LinearLayout mContainer;
+    private Toolbar mToolbar;
     private RadioGroup mRadioGroup;
 
     private ArrayList<String> playListUrisToString;
@@ -135,7 +143,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         AppCompatButton mPickVideo = findViewById(R.id.button_pick_video);
         mPickVideo.setOnClickListener(this);
 
+        setupToolbar();
 
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.activity_main, menu);
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_simple:
+                Intent mainActivityIntent = new Intent(this, MainActivity.class);
+                startActivity(mainActivityIntent);
+                break;
+            case R.id.menu_complex:
+                Intent complexActivityIntent = new Intent(this, ComplexActivity.class);
+                startActivity(complexActivityIntent);
+                break;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -201,5 +235,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Dialog dialog = builder.create();
         dialog.show();
     }
+
+    private void setupToolbar() {
+        mToolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(mToolbar);
+    }
+
+
 
 }

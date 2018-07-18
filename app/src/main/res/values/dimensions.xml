@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="leaf_player_media_button_height">25dp</dimen>
+    <dimen name="leaf_player_media_button_width">25dp</dimen>
+
+</resources>
