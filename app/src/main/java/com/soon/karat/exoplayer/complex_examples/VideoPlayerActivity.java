@@ -1,13 +1,17 @@
 package com.soon.karat.exoplayer.complex_examples;
 
 import android.annotation.SuppressLint;
+import android.content.res.Configuration;
+import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Display;
 import android.view.Surface;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -29,14 +33,13 @@ import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
-import com.google.android.exoplayer2.ui.PlayerControlView;
-import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 import com.google.android.exoplayer2.video.VideoRendererEventListener;
 import com.soon.karat.exoplayer.R;
+import com.soon.karat.exoplayer.ThumbNailPlayerView;
 
 public class VideoPlayerActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -44,7 +47,7 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
     private static final String TAG = "VideoPlayerActivity";
     
     private SimpleExoPlayer player;
-    private PlayerView mPlayerView;
+    private ThumbNailPlayerView mPlayerView;
     private DefaultTrackSelector trackSelector;
     private ComponentListener componentListener;
 
@@ -69,6 +72,7 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
         componentListener = new ComponentListener();
         setupWidgets();
         setupClickListeners();
+        setPlayerViewDimensions();
 
     }
 
@@ -138,6 +142,18 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
         }
     }
 
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            Log.i(TAG, "onConfigurationChanged: Configuration is changing to LandScape");
+            setPlayerViewDimensionsForLandScapeMode();
+
+        } else {
+            setPlayerViewDimensionsForPortraitMode();
+        }
+    }
+
     private void setupWidgets() {
 
         mPlayerView = findViewById(R.id.player_view);
@@ -156,6 +172,36 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
         mLike.setOnClickListener(this);
         mShare.setOnClickListener(this);
         mFullscreen.setOnClickListener(this);
+    }
+
+    private void setPlayerViewDimensionsForLandScapeMode() {
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int width = size.x;
+        int height = size.y;
+
+        mPlayerView.setDimensions(width, height);
+    }
+
+    private void setPlayerViewDimensionsForPortraitMode() {
+        // 1 (width) : 1/1.5 (height) --> Height is 66% of the width when in Portrait mode.
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int width = size.x;
+        Double heightDouble = width / 1.5;
+        Integer height = heightDouble.intValue();
+
+        mPlayerView.setDimensions(width, height);
+    }
+
+    private void setPlayerViewDimensions() {
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            setPlayerViewDimensionsForLandScapeMode();
+        } else {
+            setPlayerViewDimensionsForPortraitMode();
+        }
     }
 
     private void initializePlayer() {

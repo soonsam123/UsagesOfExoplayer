@@ -13,21 +13,25 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".simple_examples.MainActivity">
+
+        </activity>
+        <activity android:name=".simple_examples.VideoPlayerActivity" />
+        <activity android:name=".simple_examples.VideoPlaylistActivity" />
+        <activity android:name=".simple_examples.VideoClippingActivity" />
+        <activity android:name=".simple_examples.VideoLoopingActivity" />
+        <activity android:name=".complex_examples.ComplexActivity" >
+
+        </activity>
+
+        <activity android:name=".complex_examples.VideoPlayerActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+            android:launchMode="singleTop" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".simple_examples.VideoPlayerActivity" />
-        <activity android:name=".simple_examples.VideoPlaylistActivity" />
-        <activity android:name=".simple_examples.VideoClippingActivity" />
-        <activity android:name=".simple_examples.VideoLoopingActivity" />
-        <activity android:name=".complex_examples.ComplexActivity" />
-
-        <activity android:name=".complex_examples.VideoPlayerActivity"
-            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
-            android:launchMode="singleTop" />
     </application>
 
 </manifest>
