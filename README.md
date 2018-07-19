@@ -11,6 +11,8 @@ In MainActivity you can choose what you want to do. These are some more simple o
 3. Clipping a video, this will play only 5 seconds of the video;
 4. Loop a video 5 times.
 
+<img src="https://github.com/soonsam123/UsagesOfExoplayer/blob/master/pictures/simple_page.png" width="280" height="442"/>
+
 First, select your option. Then click in the Button "Pick a Video" and you will be redirected to your gallery. The code will handle the request permissions for WRITE_EXTERNAL_STORAGE in the following cases:
 
 - When the user deny it: The app will display a snackbar showing the user he needs to give permissions to access the gallery.
@@ -81,7 +83,14 @@ In ComplexActivity you can choose what you want to do. These are some more compl
   - Change to full screen when in landscape mode just like youtube app;
   - Works in multi-window mode; (API 24 or greater)
   - Come back to same position when leaving the app and coming back again.
+
+<img src="https://github.com/soonsam123/UsagesOfExoplayer/blob/master/pictures/complex_page.png" width="280" height="449"/>
+
+<img src="https://github.com/soonsam123/UsagesOfExoplayer/blob/master/pictures/video_buffering.png" width="280" height="478"/>
+
+<img src="https://github.com/soonsam123/UsagesOfExoplayer/blob/master/pictures/video_portrait_mode.png" width="280" height="484"/>
+
+<img src="https://github.com/soonsam123/UsagesOfExoplayer/blob/master/pictures/video_landscape_mode.png" width="480" height="268"/>  
+
 2. Play a video with Ads;
-
-
 
