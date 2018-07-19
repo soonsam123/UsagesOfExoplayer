@@ -35,7 +35,7 @@ public class VideoPlaylistActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_video_playlist);
+        setContentView(R.layout.activity_video_player);
 
         videoUriToStringList = new ArrayList<>();
         videoUriList = new ArrayList<>();

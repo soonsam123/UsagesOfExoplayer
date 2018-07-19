@@ -33,7 +33,7 @@ public class VideoLoopingActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_video_looping);
+        setContentView(R.layout.activity_video_player);
 
         // 1. Get the Uri of the video from MainActivity.
         Intent intent = getIntent();

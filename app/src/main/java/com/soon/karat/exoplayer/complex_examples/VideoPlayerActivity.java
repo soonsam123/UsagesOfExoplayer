@@ -9,9 +9,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Display;
-import android.view.Surface;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -19,16 +17,15 @@ import android.widget.Toast;
 
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayerFactory;
-import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
-import com.google.android.exoplayer2.audio.AudioRendererEventListener;
-import com.google.android.exoplayer2.decoder.DecoderCounters;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
+import com.google.android.exoplayer2.source.dash.DashMediaSource;
+import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
@@ -37,15 +34,14 @@ import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
-import com.google.android.exoplayer2.video.VideoRendererEventListener;
 import com.soon.karat.exoplayer.R;
 import com.soon.karat.exoplayer.ThumbNailPlayerView;
 
 public class VideoPlayerActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private static final DefaultBandwidthMeter BANDWIDTH_METER = new DefaultBandwidthMeter();
     private static final String TAG = "VideoPlayerActivity";
-    
+    private static final DefaultBandwidthMeter BANDWIDTH_METER = new DefaultBandwidthMeter();
+
     private SimpleExoPlayer player;
     private ThumbNailPlayerView mPlayerView;
     private DefaultTrackSelector trackSelector;
@@ -67,7 +63,7 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.i(TAG, "onCreate: Creating");
-        setContentView(R.layout.activity_video_player);
+        setContentView(R.layout.activity_video_player_complex);
 
         componentListener = new ComponentListener();
         setupWidgets();
@@ -211,17 +207,22 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
             trackSelector = new DefaultTrackSelector(trackSelectionFactory);
             player = ExoPlayerFactory.newSimpleInstance(this, trackSelector);
             player.addListener(componentListener);
-            player.addVideoDebugListener(componentListener);
-            player.addAudioDebugListener(componentListener);
             mPlayerView.setPlayer(player);
             player.setPlayWhenReady(playWhenReady);
             Log.i(TAG, "initializePlayer: Seeking to: " + currentWindow + " - " + playbackPosition);
             player.seekTo(currentWindow, playbackPosition); // This make the playback come back to the previous position.
         }
         Log.i(TAG, "initializePlayer: Initializing Player != null");
-        MediaSource videoSource = buildMediaSource(Uri.parse(getString(R.string.video_mp4)));
+
+        // Play dash content
+        /*MediaSource videoSource = buildDashMediaSource(Uri.parse(getString(R.string.video_dash)));*/
+        // Play mp4 content
+        MediaSource videoSource = buildMediaSource(Uri.parse(getString(R.string.video_mp4_sintel)));
+
         player.prepare(videoSource, false, true);
     }
+
+    /*<iframe src="https://player.vimeo.com/video/229783631?color=7ACE57&title=0&byline=0&portrait=0"*/
 
     private void releasePlayer() {
         if (player != null) {
@@ -231,8 +232,6 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
             playWhenReady = player.getPlayWhenReady();
             player.removeListener(componentListener);
             player.addVideoListener(null);
-            player.addVideoDebugListener(null);
-            player.addAudioDebugListener(null);
             player.release();
             player = null;
             trackSelector = null;
@@ -248,6 +247,15 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
         return new ExtractorMediaSource.Factory(dataSourceFactory).createMediaSource(uri);
     }
 
+    private MediaSource buildDashMediaSource(Uri uri) {
+        DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this,
+                Util.getUserAgent(this, getString(R.string.app_name)), BANDWIDTH_METER);
+        return new DashMediaSource.Factory(
+                new DefaultDashChunkSource.Factory(dataSourceFactory), dataSourceFactory)
+                .createMediaSource(uri);
+
+    }
+
     @SuppressLint("InlinedApi") // View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY min API is 19, current min is 18.
     private void hideSystemUi() {
         mPlayerView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
@@ -260,7 +268,7 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
 
 
 
-    private class ComponentListener implements Player.EventListener, VideoRendererEventListener, AudioRendererEventListener {
+    private class ComponentListener implements Player.EventListener{
         @Override
         public void onTimelineChanged(Timeline timeline, Object manifest, int reason) {
 
@@ -335,69 +343,5 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
 
         }
 
-        @Override
-        public void onAudioEnabled(DecoderCounters counters) {
-
-        }
-
-        @Override
-        public void onAudioSessionId(int audioSessionId) {
-
-        }
-
-        @Override
-        public void onAudioDecoderInitialized(String decoderName, long initializedTimestampMs, long initializationDurationMs) {
-
-        }
-
-        @Override
-        public void onAudioInputFormatChanged(Format format) {
-
-        }
-
-        @Override
-        public void onAudioSinkUnderrun(int bufferSize, long bufferSizeMs, long elapsedSinceLastFeedMs) {
-
-        }
-
-        @Override
-        public void onAudioDisabled(DecoderCounters counters) {
-
-        }
-
-        @Override
-        public void onVideoEnabled(DecoderCounters counters) {
-
-        }
-
-        @Override
-        public void onVideoDecoderInitialized(String decoderName, long initializedTimestampMs, long initializationDurationMs) {
-
-        }
-
-        @Override
-        public void onVideoInputFormatChanged(Format format) {
-
-        }
-
-        @Override
-        public void onDroppedFrames(int count, long elapsedMs) {
-
-        }
-
-        @Override
-        public void onVideoSizeChanged(int width, int height, int unappliedRotationDegrees, float pixelWidthHeightRatio) {
-
-        }
-
-        @Override
-        public void onRenderedFirstFrame(Surface surface) {
-
-        }
-
-        @Override
-        public void onVideoDisabled(DecoderCounters counters) {
-
-        }
     }
 }

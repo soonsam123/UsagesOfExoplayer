@@ -14,6 +14,7 @@
     <string name="action_like">Like</string>
     <string name="action_share">Share</string>
     <string name="action_full_screen">Full Screen</string>
+    <string name="action_play_a_video_with_ads">Play a video with Ads</string>
 
     <string name="preferences_settings">Settings</string>
 
@@ -22,7 +23,10 @@
 
     <string name="question_what_do_you_want_to_play">What do you want to play?</string>
 
-    <string name="video_mp4">http://www.html5videoplayer.net/videos/toystory.mp4</string>
+    <string name="video_mp4_toy_story">http://www.html5videoplayer.net/videos/toystory.mp4</string>
+    <string name="video_mp4_sintel">http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4</string>
+    <!--<string name="video_dash">http://www.youtube.com/api/manifest/dash/id/3aa39fa2cc27967f/source/youtube?as=fmp4_audio_clear,fmp4_sd_hd_clear&sparams=ip,ipbits,expire,source,id,as&ip=0.0.0.0&ipbits=0&expire=19000000000&signature=A2716F75795F5D2AF0E88962FFCD10DB79384F29.84308FF04844498CE6FBCE4731507882B8307798&key=ik0</string>-->
+
     <string name="msg_simple_examples">Simple examples</string>
     <string name="simple">Simple</string>
     <string name="complex">Complex</string>

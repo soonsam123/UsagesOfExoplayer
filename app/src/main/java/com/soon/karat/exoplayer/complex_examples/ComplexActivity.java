@@ -68,6 +68,11 @@ public class ComplexActivity extends AppCompatActivity implements View.OnClickLi
                     Intent videoPlayerIntent = new Intent(this, VideoPlayerActivity.class);
                     startActivity(videoPlayerIntent);
                     break;
+                // 2. ________________ Play a Video with Ads ________________
+                case R.id.radio_button_video_with_ads:
+                    Intent adsIntent = new Intent(this, AdsActivity.class);
+                    startActivity(adsIntent);
+                    break;
             }
         }
     }

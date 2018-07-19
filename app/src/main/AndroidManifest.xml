@@ -20,18 +20,17 @@
         <activity android:name=".simple_examples.VideoClippingActivity" />
         <activity android:name=".simple_examples.VideoLoopingActivity" />
         <activity android:name=".complex_examples.ComplexActivity" >
-
-        </activity>
-
-        <activity android:name=".complex_examples.VideoPlayerActivity"
-            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
-            android:launchMode="singleTop" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity android:name=".complex_examples.VideoPlayerActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+            android:launchMode="singleTop" />
+        <activity android:name=".complex_examples.AdsActivity" />
     </application>
 
 </manifest>

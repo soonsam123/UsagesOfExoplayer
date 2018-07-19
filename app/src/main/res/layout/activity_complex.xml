@@ -46,6 +46,12 @@
             android:layout_height="wrap_content"
             android:text="@string/action_play_a_single_video"/>
 
+        <RadioButton
+            android:id="@+id/radio_button_video_with_ads"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/action_play_a_video_with_ads"/>
+
     </RadioGroup>
 
     <android.support.v7.widget.AppCompatButton
