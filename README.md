@@ -6,12 +6,12 @@ These are some usages of ExoPlayer.
 **MainActivity.java**
 In MainActivity you can choose what you want to do. These are some more simple options.
 
+<img src="https://github.com/soonsam123/UsagesOfExoplayer/blob/master/pictures/simple_page.png" width="280" height="442"/>
+
 1. Play a single video; 
 2. Play a playlist;
 3. Clipping a video, this will play only 5 seconds of the video;
 4. Loop a video 5 times.
-
-<img src="https://github.com/soonsam123/UsagesOfExoplayer/blob/master/pictures/simple_page.png" width="280" height="442"/>
 
 First, select your option. Then click in the Button "Pick a Video" and you will be redirected to your gallery. The code will handle the request permissions for WRITE_EXTERNAL_STORAGE in the following cases:
 
@@ -75,6 +75,8 @@ MediaSource videoSource =
 **ComplexActivity.java**
 In ComplexActivity you can choose what you want to do. These are some more complex options.
 
+<img src="https://github.com/soonsam123/UsagesOfExoplayer/blob/master/pictures/complex_page.png" width="280" height="449"/>
+
 1. Play a single video: 
   - Play a mp4 or DASH video from the internet with fully player layout customization; 
   - Custom buttons in the player; 
@@ -83,8 +85,6 @@ In ComplexActivity you can choose what you want to do. These are some more compl
   - Change to full screen when in landscape mode just like youtube app;
   - Works in multi-window mode; (API 24 or greater)
   - Come back to same position when leaving the app and coming back again.
-
-<img src="https://github.com/soonsam123/UsagesOfExoplayer/blob/master/pictures/complex_page.png" width="280" height="449"/>
 
 <img src="https://github.com/soonsam123/UsagesOfExoplayer/blob/master/pictures/video_buffering.png" width="280" height="478"/>
 
