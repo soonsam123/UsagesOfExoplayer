@@ -1,6 +1,7 @@
 package com.soon.karat.exoplayer.complex_examples;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Point;
 import android.net.Uri;
@@ -15,6 +16,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.PlaybackParameters;
@@ -37,15 +39,18 @@ import com.google.android.exoplayer2.util.Util;
 import com.soon.karat.exoplayer.R;
 import com.soon.karat.exoplayer.ThumbNailPlayerView;
 
-public class VideoPlayerActivity extends AppCompatActivity implements View.OnClickListener {
+public class PlayerActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private static final String TAG = "VideoPlayerActivity";
+    private static final String TAG = "PlayerActivity";
     private static final DefaultBandwidthMeter BANDWIDTH_METER = new DefaultBandwidthMeter();
+
+    private static final String KEY_WINDOW = "window";
+    private static final String KEY_POSITION = "position";
+    private static final String KEY_AUTO_PLAY = "auto_play";
 
     private SimpleExoPlayer player;
     private ThumbNailPlayerView mPlayerView;
     private DefaultTrackSelector trackSelector;
-    private ComponentListener componentListener;
 
     private ImageButton mBack;
     private ImageButton mLike;
@@ -55,27 +60,39 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
     private LinearLayout mPlayPauseLayout;
     private ProgressBar mProgressBar;
 
-    private long playbackPosition;
-    private int currentWindow;
-    private boolean playWhenReady = true;
+    private long startPosition;
+    private int startWindow;
+    private boolean startAutoPlay;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.i(TAG, "onCreate: Creating");
         setContentView(R.layout.activity_video_player_complex);
 
-        componentListener = new ComponentListener();
         setupWidgets();
         setupClickListeners();
         setPlayerViewDimensions();
 
+        if (savedInstanceState != null) {
+            startAutoPlay = savedInstanceState.getBoolean(KEY_AUTO_PLAY);
+            startWindow = savedInstanceState.getInt(KEY_WINDOW);
+            startPosition = savedInstanceState.getLong(KEY_POSITION);
+        } else {
+            clearStartPosition();
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        Log.i(TAG, "onNewIntent: Running onNewIntent");
+        releasePlayer();
+        clearStartPosition();
+        setIntent(intent);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        Log.i(TAG, "onStart: Starting");
         if (Util.SDK_INT > 23) {
             initializePlayer();
         }
@@ -84,8 +101,6 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
     @Override
     protected void onResume() {
         super.onResume();
-        Log.i(TAG, "onResume: Resuming");
-        hideSystemUi();
         if (Util.SDK_INT <= 23 || player == null) {
             initializePlayer();
         }
@@ -94,7 +109,6 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
     @Override
     protected void onPause() {
         super.onPause();
-        Log.i(TAG, "onPause: Pausing");
         if (Util.SDK_INT <= 23) {
             releasePlayer();
         }
@@ -103,7 +117,6 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
     @Override
     protected void onStop() {
         super.onStop();
-        Log.i(TAG, "onStop: Stopping");
         if (Util.SDK_INT > 23) {
             releasePlayer();
         }
@@ -112,12 +125,18 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.i(TAG, "onDestroy: Destroying");
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+        updateStartPosition();
+        outState.putBoolean(KEY_AUTO_PLAY, startAutoPlay);
+        outState.putInt(KEY_WINDOW, startWindow);
+        outState.putLong(KEY_POSITION, startPosition);
+        Log.i(TAG, "onSaveInstanceState: Saving AUTO_PLAY: " + startAutoPlay);
+        Log.i(TAG, "onSaveInstanceState: Saving WINDOW: " + startWindow);
+        Log.i(TAG, "onSaveInstanceState: Saving POSITION: " + startPosition);
     }
 
     @Override
@@ -177,6 +196,7 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
         int width = size.x;
         int height = size.y;
 
+        hideSystemUi();
         mPlayerView.setDimensions(width, height);
     }
 
@@ -202,43 +222,46 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
 
     private void initializePlayer() {
         if (player == null) {
-            Log.i(TAG, "initializePlayer: Initializing Player == null");
             TrackSelection.Factory trackSelectionFactory = new AdaptiveTrackSelection.Factory(BANDWIDTH_METER);
             trackSelector = new DefaultTrackSelector(trackSelectionFactory);
             player = ExoPlayerFactory.newSimpleInstance(this, trackSelector);
-            player.addListener(componentListener);
+            player.addListener(new PlayerEventListener());
             mPlayerView.setPlayer(player);
-            player.setPlayWhenReady(playWhenReady);
-            Log.i(TAG, "initializePlayer: Seeking to: " + currentWindow + " - " + playbackPosition);
-            player.seekTo(currentWindow, playbackPosition); // This make the playback come back to the previous position.
+            player.setPlayWhenReady(startAutoPlay);
         }
-        Log.i(TAG, "initializePlayer: Initializing Player != null");
-
-        // Play dash content
-        /*MediaSource videoSource = buildDashMediaSource(Uri.parse(getString(R.string.video_dash)));*/
-        // Play mp4 content
-        MediaSource videoSource = buildMediaSource(Uri.parse(getString(R.string.video_mp4_sintel)));
-
-        player.prepare(videoSource, false, true);
+        /*MediaSource videoSource = buildMediaSource(Uri.parse(getString(R.string.video_mp4_sintel)));*/
+        MediaSource videoSource = buildDashMediaSource(Uri.parse("http://www.youtube.com/api/manifest/dash/id/3aa39fa2cc27967f/source/youtube?as=fmp4_audio_clear,fmp4_sd_hd_clear&sparams=ip,ipbits,expire,source,id,as&ip=0.0.0.0&ipbits=0&expire=19000000000&signature=A2716F75795F5D2AF0E88962FFCD10DB79384F29.84308FF04844498CE6FBCE4731507882B8307798&key=ik0"));
+        boolean haveStartPosition = startWindow != C.INDEX_UNSET;
+        if (haveStartPosition) {
+            player.seekTo(startWindow, startPosition);
+        }
+        player.prepare(videoSource, !haveStartPosition, true);
     }
-
-    /*<iframe src="https://player.vimeo.com/video/229783631?color=7ACE57&title=0&byline=0&portrait=0"*/
 
     private void releasePlayer() {
         if (player != null) {
             Log.i(TAG, "releasePlayer: Releasing Player");
-            playbackPosition = player.getCurrentPosition();
-            currentWindow = player.getCurrentWindowIndex();
-            playWhenReady = player.getPlayWhenReady();
-            player.removeListener(componentListener);
-            player.addVideoListener(null);
+            updateStartPosition();
+            player.removeListener(new PlayerEventListener());
+            player.addVideoListener(null); // Is it necessary to remove these listeners? afraid of memory leak. OOM
             player.release();
             player = null;
             trackSelector = null;
-            Log.i(TAG, "releasePlayer: playbackPosition: " + playbackPosition);
-            Log.i(TAG, "releasePlayer: currentWindow: " + currentWindow);
-            Log.i(TAG, "releasePlayer: playWhenReady: " + playWhenReady);
         }
+    }
+
+    private void updateStartPosition() {
+        if (player != null) {
+            startAutoPlay = player.getPlayWhenReady();
+            startWindow = player.getCurrentWindowIndex();
+            startPosition = Math.max(0, player.getContentPosition());
+        }
+    }
+
+    private void clearStartPosition() {
+        startAutoPlay = true;
+        startWindow = C.INDEX_UNSET;
+        startPosition = C.TIME_UNSET;
     }
 
     private MediaSource buildMediaSource(Uri uri) {
@@ -266,24 +289,7 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
                 | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
     }
 
-
-
-    private class ComponentListener implements Player.EventListener{
-        @Override
-        public void onTimelineChanged(Timeline timeline, Object manifest, int reason) {
-
-        }
-
-        @Override
-        public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
-
-        }
-
-        @Override
-        public void onLoadingChanged(boolean isLoading) {
-
-        }
-
+    private class PlayerEventListener extends Player.DefaultEventListener{
         @Override
         public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
             String stateString;
@@ -310,38 +316,22 @@ public class VideoPlayerActivity extends AppCompatActivity implements View.OnCli
                     stateString = "UNKNOWN_STATE";
                     break;
             }
-            Log.i(TAG, "onPlayerStateChanged: Changed to State: " + stateString + " - playWhenReady: " + playWhenReady);
-        }
-
-        @Override
-        public void onRepeatModeChanged(int repeatMode) {
-
-        }
-
-        @Override
-        public void onShuffleModeEnabledChanged(boolean shuffleModeEnabled) {
-
-        }
-
-        @Override
-        public void onPlayerError(ExoPlaybackException error) {
-
+            Log.i(TAG, "onPlayerStateChanged: Changed to State: " + stateString + " - startAutoPlay: " + playWhenReady);
         }
 
         @Override
         public void onPositionDiscontinuity(int reason) {
-
+            super.onPositionDiscontinuity(reason);
         }
 
         @Override
-        public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) {
-
+        public void onPlayerError(ExoPlaybackException error) {
+            super.onPlayerError(error);
         }
 
         @Override
-        public void onSeekProcessed() {
-
+        public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
+            super.onTracksChanged(trackGroups, trackSelections);
         }
-
     }
 }

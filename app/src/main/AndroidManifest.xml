@@ -27,9 +27,10 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".complex_examples.VideoPlayerActivity"
+        <activity android:name=".complex_examples.PlayerActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
-            android:launchMode="singleTop" />
+            android:launchMode="singleTop"
+            android:theme="@style/PlayerActivityTheme"/>
         <activity android:name=".complex_examples.AdsActivity" />
     </application>
 

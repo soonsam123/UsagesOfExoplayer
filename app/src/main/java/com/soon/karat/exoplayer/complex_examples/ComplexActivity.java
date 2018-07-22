@@ -65,7 +65,7 @@ public class ComplexActivity extends AppCompatActivity implements View.OnClickLi
             switch (mRadioGroup.getCheckedRadioButtonId()) {
                 // 1. ________________ Play a Single Video ________________
                 case R.id.radio_button_single_video:
-                    Intent videoPlayerIntent = new Intent(this, VideoPlayerActivity.class);
+                    Intent videoPlayerIntent = new Intent(this, PlayerActivity.class);
                     startActivity(videoPlayerIntent);
                     break;
                 // 2. ________________ Play a Video with Ads ________________

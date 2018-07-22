@@ -16,4 +16,8 @@
     </style>
     -->
 
+    <style name="PlayerActivityTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimaryDark">@color/colorBlack</item>
+    </style>
+
 </resources>
