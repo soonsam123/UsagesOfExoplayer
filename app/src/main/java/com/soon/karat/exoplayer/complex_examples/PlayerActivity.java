@@ -1,6 +1,7 @@
 package com.soon.karat.exoplayer.complex_examples;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Point;
@@ -9,8 +10,10 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.util.Pair;
 import android.view.Display;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -19,19 +22,20 @@ import android.widget.Toast;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayerFactory;
-import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
-import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
+import com.google.android.exoplayer2.source.dash.DashChunkSource;
 import com.google.android.exoplayer2.source.dash.DashMediaSource;
 import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.MappingTrackSelector.MappedTrackInfo;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.google.android.exoplayer2.ui.TrackSelectionView;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
@@ -44,13 +48,18 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
     private static final String TAG = "PlayerActivity";
     private static final DefaultBandwidthMeter BANDWIDTH_METER = new DefaultBandwidthMeter();
 
+    private static final String KEY_TRACK_SELECTOR_PARAMETERS = "track_selector_parameters";
     private static final String KEY_WINDOW = "window";
     private static final String KEY_POSITION = "position";
     private static final String KEY_AUTO_PLAY = "auto_play";
 
+    private static final String TYPE_DASH = "dash";
+    private static final String TYPE_OTHER = "other";
+
     private SimpleExoPlayer player;
     private ThumbNailPlayerView mPlayerView;
     private DefaultTrackSelector trackSelector;
+    private DefaultTrackSelector.Parameters trackSelectorParameters;
 
     private ImageButton mBack;
     private ImageButton mLike;
@@ -59,6 +68,8 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
 
     private LinearLayout mPlayPauseLayout;
     private ProgressBar mProgressBar;
+
+    private LinearLayout debugRootView;
 
     private long startPosition;
     private int startWindow;
@@ -78,6 +89,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
             startWindow = savedInstanceState.getInt(KEY_WINDOW);
             startPosition = savedInstanceState.getLong(KEY_POSITION);
         } else {
+            trackSelectorParameters = new DefaultTrackSelector.ParametersBuilder().build();
             clearStartPosition();
         }
     }
@@ -130,6 +142,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+        updateTrackSelectorParameters();
         updateStartPosition();
         outState.putBoolean(KEY_AUTO_PLAY, startAutoPlay);
         outState.putInt(KEY_WINDOW, startWindow);
@@ -154,6 +167,24 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
             case R.id.image_button_full_screen:
                 Toast.makeText(this, "Fullscreen", Toast.LENGTH_SHORT).show();
                 break;
+        }
+        if (v.getParent() == debugRootView) {
+            MappedTrackInfo mappedTrackInfo = trackSelector.getCurrentMappedTrackInfo();
+            if (mappedTrackInfo != null) {
+                CharSequence title = ((Button) v).getText();
+                int rendererIndex = (int) v.getTag();
+                int rendererType = mappedTrackInfo.getRendererType(rendererIndex);
+                boolean allowAdaptiveSelections =
+                        rendererType == C.TRACK_TYPE_VIDEO ||
+                                (rendererType == C.TRACK_TYPE_AUDIO
+                                        && mappedTrackInfo.getTypeSupport(C.TRACK_TYPE_VIDEO)
+                                        == MappedTrackInfo.RENDERER_SUPPORT_NO_TRACKS);
+                Pair<AlertDialog, TrackSelectionView> dialogPair =
+                        TrackSelectionView.getDialog(this, title, trackSelector, rendererIndex);
+                dialogPair.second.setShowDisableOption(true);
+                dialogPair.second.setAllowAdaptiveSelections(allowAdaptiveSelections);
+                dialogPair.first.show();
+            }
         }
     }
 
@@ -180,6 +211,8 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
 
         mPlayPauseLayout = findViewById(R.id.linear_layout_play_pause);
         mProgressBar = findViewById(R.id.progress_bar);
+
+        debugRootView = findViewById(R.id.controls_root);
     }
 
     private void setupClickListeners() {
@@ -224,18 +257,19 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         if (player == null) {
             TrackSelection.Factory trackSelectionFactory = new AdaptiveTrackSelection.Factory(BANDWIDTH_METER);
             trackSelector = new DefaultTrackSelector(trackSelectionFactory);
+            trackSelector.setParameters(trackSelectorParameters);
             player = ExoPlayerFactory.newSimpleInstance(this, trackSelector);
             player.addListener(new PlayerEventListener());
             mPlayerView.setPlayer(player);
             player.setPlayWhenReady(startAutoPlay);
         }
-        /*MediaSource videoSource = buildMediaSource(Uri.parse(getString(R.string.video_mp4_sintel)));*/
-        MediaSource videoSource = buildDashMediaSource(Uri.parse("http://www.youtube.com/api/manifest/dash/id/3aa39fa2cc27967f/source/youtube?as=fmp4_audio_clear,fmp4_sd_hd_clear&sparams=ip,ipbits,expire,source,id,as&ip=0.0.0.0&ipbits=0&expire=19000000000&signature=A2716F75795F5D2AF0E88962FFCD10DB79384F29.84308FF04844498CE6FBCE4731507882B8307798&key=ik0"));
+        MediaSource videoSource = buildMediaSource(TYPE_DASH, Uri.parse("http://www.youtube.com/api/manifest/dash/id/3aa39fa2cc27967f/source/youtube?as=fmp4_audio_clear,fmp4_sd_hd_clear&sparams=ip,ipbits,expire,source,id,as&ip=0.0.0.0&ipbits=0&expire=19000000000&signature=A2716F75795F5D2AF0E88962FFCD10DB79384F29.84308FF04844498CE6FBCE4731507882B8307798&key=ik0"));
         boolean haveStartPosition = startWindow != C.INDEX_UNSET;
         if (haveStartPosition) {
             player.seekTo(startWindow, startPosition);
         }
         player.prepare(videoSource, !haveStartPosition, true);
+        updateButtonVisibilities();
     }
 
     private void releasePlayer() {
@@ -247,6 +281,12 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
             player.release();
             player = null;
             trackSelector = null;
+        }
+    }
+
+    private void updateTrackSelectorParameters() {
+        if (trackSelector != null) {
+            trackSelectorParameters = trackSelector.getParameters();
         }
     }
 
@@ -264,19 +304,19 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         startPosition = C.TIME_UNSET;
     }
 
-    private MediaSource buildMediaSource(Uri uri) {
+    private MediaSource buildMediaSource(String type, Uri uri) {
         DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this,
                 Util.getUserAgent(this, getString(R.string.app_name)), BANDWIDTH_METER);
-        return new ExtractorMediaSource.Factory(dataSourceFactory).createMediaSource(uri);
-    }
-
-    private MediaSource buildDashMediaSource(Uri uri) {
-        DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this,
-                Util.getUserAgent(this, getString(R.string.app_name)), BANDWIDTH_METER);
-        return new DashMediaSource.Factory(
-                new DefaultDashChunkSource.Factory(dataSourceFactory), dataSourceFactory)
-                .createMediaSource(uri);
-
+        switch (type) {
+            case TYPE_DASH:
+                DashChunkSource.Factory dashChunkSourceFactory = new DefaultDashChunkSource.Factory(dataSourceFactory);
+                return new DashMediaSource.Factory(dashChunkSourceFactory, dataSourceFactory).createMediaSource(uri);
+            case TYPE_OTHER:
+                return new ExtractorMediaSource.Factory(dataSourceFactory).createMediaSource(uri);
+            default:{
+                throw new IllegalStateException("Unsupported type: " + type);
+            }
+        }
     }
 
     @SuppressLint("InlinedApi") // View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY min API is 19, current min is 18.
@@ -287,6 +327,52 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
                 | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                 | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+    }
+
+    private void updateButtonVisibilities() {
+        debugRootView.removeAllViews();
+        if (player == null) {
+            Log.i("Debugging", "updateButtonVisibilities: player == null");
+            return;
+        }
+
+        MappedTrackInfo mappedTrackInfo = trackSelector.getCurrentMappedTrackInfo();
+        if (mappedTrackInfo == null) {
+            Log.i("Debugging", "updateButtonVisibilities: mappedTrackInfo == null");
+            return;
+        }
+
+        for (int i = 0; i < mappedTrackInfo.getRendererCount(); i++) {
+            Log.i("Debugging", "updateButtonVisibilities: Iterating: " + i);
+            TrackGroupArray trackGroups = mappedTrackInfo.getTrackGroups(i);
+            if (trackGroups.length != 0) {
+                Log.i("Debugging", "updateButtonVisibilities: trackGroups: " + trackGroups.toString() + " - trackGroups.length: " + trackGroups.length);
+                Button button = new Button(this);
+                int label;
+                switch (player.getRendererType(i)) {
+                    case C.TRACK_TYPE_AUDIO:
+                        Log.i("Debugging", "updateButtonVisibilities: Type Audio");
+                        label = R.string.track_selection_audio;
+                        break;
+                    case C.TRACK_TYPE_VIDEO:
+                        Log.i("Debugging", "updateButtonVisibilities: Type Video");
+                        label = R.string.track_selection_video;
+                        break;
+                    case C.TRACK_TYPE_TEXT:
+                        Log.i("Debugging", "updateButtonVisibilities: Type Text");
+                        label = R.string.track_selection_text;
+                        break;
+                    default:
+                        continue;
+                }
+                button.setText(label);
+                button.setTag(i);
+                button.setOnClickListener(this);
+                debugRootView.addView(button);
+                Log.i("Debugging", "updateButtonVisibilities: debutRootView: " + debugRootView.toString());
+                Log.i("Debugging", "updateButtonVisibilities: debutRootView Size: " + debugRootView.getChildCount());
+            }
+        }
     }
 
     private class PlayerEventListener extends Player.DefaultEventListener{
@@ -316,7 +402,8 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
                     stateString = "UNKNOWN_STATE";
                     break;
             }
-            Log.i(TAG, "onPlayerStateChanged: Changed to State: " + stateString + " - startAutoPlay: " + playWhenReady);
+            Log.i("Debugging", "onPlayerStateChanged: Changed to State: " + stateString + " - startAutoPlay: " + playWhenReady);
+            updateButtonVisibilities();
         }
 
         @Override
@@ -331,7 +418,8 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
 
         @Override
         public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
-            super.onTracksChanged(trackGroups, trackSelections);
+            updateButtonVisibilities();
+            Log.i("Debugging", "onTracksChanged: Track is changing");
         }
     }
 }

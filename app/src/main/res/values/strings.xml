@@ -32,4 +32,8 @@
     <string name="complex">Complex</string>
     <string name="msg_complex_examples">Complex examples</string>
 
+    <string name="track_selection_audio">Audio</string>
+    <string name="track_selection_video">Video</string>
+    <string name="track_selection_text">Text</string>
+
 </resources>
