@@ -60,6 +60,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
     private ThumbNailPlayerView mPlayerView;
     private DefaultTrackSelector trackSelector;
     private DefaultTrackSelector.Parameters trackSelectorParameters;
+    private TrackGroupArray lastSeenTrackGroupArray;
 
     private ImageButton mBack;
     private ImageButton mLike;
@@ -170,15 +171,16 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         }
         if (v.getParent() == debugRootView) {
             MappedTrackInfo mappedTrackInfo = trackSelector.getCurrentMappedTrackInfo();
-            if (mappedTrackInfo != null) {
-                CharSequence title = ((Button) v).getText();
-                int rendererIndex = (int) v.getTag();
-                int rendererType = mappedTrackInfo.getRendererType(rendererIndex);
+            if (mappedTrackInfo != null) { Log.i("Debugging", "onClick: mappedTrackInfo: " + mappedTrackInfo.toString());
+                CharSequence title = ((Button) v).getText(); Log.i("Debugging", "onClick: title: " + title);
+                int rendererIndex = (int) v.getTag(); Log.i("Debugging", "onClick: rendererIndex: " + rendererIndex);
+                int rendererType = mappedTrackInfo.getRendererType(rendererIndex); Log.i("Debugging", "onClick: rendererType: " + rendererType);
                 boolean allowAdaptiveSelections =
                         rendererType == C.TRACK_TYPE_VIDEO ||
                                 (rendererType == C.TRACK_TYPE_AUDIO
                                         && mappedTrackInfo.getTypeSupport(C.TRACK_TYPE_VIDEO)
                                         == MappedTrackInfo.RENDERER_SUPPORT_NO_TRACKS);
+                Log.i("Debugging", "onClick: allowAdaptiveSelections: " + allowAdaptiveSelections);
                 Pair<AlertDialog, TrackSelectionView> dialogPair =
                         TrackSelectionView.getDialog(this, title, trackSelector, rendererIndex);
                 dialogPair.second.setShowDisableOption(true);
@@ -258,12 +260,13 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
             TrackSelection.Factory trackSelectionFactory = new AdaptiveTrackSelection.Factory(BANDWIDTH_METER);
             trackSelector = new DefaultTrackSelector(trackSelectionFactory);
             trackSelector.setParameters(trackSelectorParameters);
+            lastSeenTrackGroupArray = null;
             player = ExoPlayerFactory.newSimpleInstance(this, trackSelector);
             player.addListener(new PlayerEventListener());
             mPlayerView.setPlayer(player);
             player.setPlayWhenReady(startAutoPlay);
         }
-        MediaSource videoSource = buildMediaSource(TYPE_DASH, Uri.parse("http://www.youtube.com/api/manifest/dash/id/3aa39fa2cc27967f/source/youtube?as=fmp4_audio_clear,fmp4_sd_hd_clear&sparams=ip,ipbits,expire,source,id,as&ip=0.0.0.0&ipbits=0&expire=19000000000&signature=A2716F75795F5D2AF0E88962FFCD10DB79384F29.84308FF04844498CE6FBCE4731507882B8307798&key=ik0"));
+        MediaSource videoSource = buildMediaSource(TYPE_DASH, Uri.parse("http://yt-dash-mse-test.commondatastorage.googleapis.com/media/feelings_vp9-20130806-manifest.mpd"));
         boolean haveStartPosition = startWindow != C.INDEX_UNSET;
         if (haveStartPosition) {
             player.seekTo(startWindow, startPosition);
@@ -418,8 +421,23 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
 
         @Override
         public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
-            updateButtonVisibilities();
             Log.i("Debugging", "onTracksChanged: Track is changing");
+            updateButtonVisibilities();
+            // It seems it handle errors.
+            if (trackGroups != lastSeenTrackGroupArray) {
+                MappedTrackInfo mappedTrackInfo = trackSelector.getCurrentMappedTrackInfo();
+                if (mappedTrackInfo != null) {
+                    if (mappedTrackInfo.getTypeSupport(C.TRACK_TYPE_VIDEO)
+                            == MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
+                        Toast.makeText(PlayerActivity.this, getString(R.string.error_unsupported_video), Toast.LENGTH_SHORT).show();
+                    }
+                    if (mappedTrackInfo.getTypeSupport(C.TRACK_TYPE_AUDIO)
+                            == MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
+                        Toast.makeText(PlayerActivity.this, getString(R.string.error_unsupported_audio), Toast.LENGTH_SHORT).show();
+                    }
+                }
+                lastSeenTrackGroupArray = trackGroups;
+            }
         }
     }
 }

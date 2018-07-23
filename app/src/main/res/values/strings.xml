@@ -25,7 +25,8 @@
 
     <string name="video_mp4_toy_story">http://www.html5videoplayer.net/videos/toystory.mp4</string>
     <string name="video_mp4_sintel">http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4</string>
-    <!--<string name="video_dash">http://www.youtube.com/api/manifest/dash/id/3aa39fa2cc27967f/source/youtube?as=fmp4_audio_clear,fmp4_sd_hd_clear&sparams=ip,ipbits,expire,source,id,as&ip=0.0.0.0&ipbits=0&expire=19000000000&signature=A2716F75795F5D2AF0E88962FFCD10DB79384F29.84308FF04844498CE6FBCE4731507882B8307798&key=ik0</string>-->
+    <!--<string name="video_dash_google_play">http://www.youtube.com/api/manifest/dash/id/3aa39fa2cc27967f/source/youtube?as=fmp4_audio_clear,fmp4_sd_hd_clear&sparams=ip,ipbits,expire,source,id,as&ip=0.0.0.0&ipbits=0&expire=19000000000&signature=A2716F75795F5D2AF0E88962FFCD10DB79384F29.84308FF04844498CE6FBCE4731507882B8307798&key=ik0</string>
+    <string name="video_dash_google_glass">http://yt-dash-mse-test.commondatastorage.googleapis.com/media/feelings_vp9-20130806-manifest.mpd</string>-->
 
     <string name="msg_simple_examples">Simple examples</string>
     <string name="simple">Simple</string>
@@ -35,5 +36,8 @@
     <string name="track_selection_audio">Audio</string>
     <string name="track_selection_video">Video</string>
     <string name="track_selection_text">Text</string>
+
+    <string name="error_unsupported_video">Media includes video tracks, but none are playable by this device</string>
+    <string name="error_unsupported_audio">Media includes audio tracks, but none are playable by this device</string>
 
 </resources>
