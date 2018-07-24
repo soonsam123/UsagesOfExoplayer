@@ -68,6 +68,16 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent">
 
+        <TextView
+            android:id="@+id/text_minus_10_seconds"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/btn_play_pause"
+            android:padding="14dp"
+            android:text="@string/minus_10"
+            android:textSize="18sp"
+            android:textColor="@color/colorWhite" />
+
         <ImageButton android:id="@id/exo_prev"
             style="@style/ExoMediaButton.Previous"
             android:background="@drawable/btn_play_pause"
@@ -87,6 +97,16 @@
             style="@style/ExoMediaButton.Next"
             android:background="@drawable/btn_play_pause"
             tools:ignore="ContentDescription" />
+
+        <TextView
+            android:id="@+id/text_plus_10_seconds"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/btn_play_pause"
+            android:padding="14dp"
+            android:text="@string/plus_10"
+            android:textSize="18sp"
+            android:textColor="@color/colorWhite" />
 
     </LinearLayout>
 

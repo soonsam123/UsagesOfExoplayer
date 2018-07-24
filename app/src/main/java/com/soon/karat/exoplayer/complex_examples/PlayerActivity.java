@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.exoplayer2.C;
@@ -75,6 +76,8 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
     private ImageButton mLike;
     private ImageButton mShare;
     private ImageButton mFullscreen;
+    private TextView mMinus10seconds;
+    private TextView mPlus10seconds;
 
     private LinearLayout mPlayPauseLayout;
     private ProgressBar mProgressBar;
@@ -173,6 +176,12 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
             case R.id.image_button_full_screen:
                 Toast.makeText(this, "Fullscreen", Toast.LENGTH_SHORT).show();
                 break;
+            case R.id.text_minus_10_seconds:
+                player.seekTo(player.getCurrentPosition() - 10000);
+                break;
+            case R.id.text_plus_10_seconds:
+                player.seekTo(player.getCurrentPosition() + 10000);
+                break;
         }
         if (v.getParent() == debugRootView) {
             MappedTrackInfo mappedTrackInfo = trackSelector.getCurrentMappedTrackInfo();
@@ -214,6 +223,8 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         mLike = findViewById(R.id.image_button_like);
         mShare = findViewById(R.id.image_button_share);
         mFullscreen = findViewById(R.id.image_button_full_screen);
+        mMinus10seconds = findViewById(R.id.text_minus_10_seconds);
+        mPlus10seconds = findViewById(R.id.text_plus_10_seconds);
 
         mPlayPauseLayout = findViewById(R.id.linear_layout_play_pause);
         mProgressBar = findViewById(R.id.progress_bar);
@@ -226,6 +237,8 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         mLike.setOnClickListener(this);
         mShare.setOnClickListener(this);
         mFullscreen.setOnClickListener(this);
+        mMinus10seconds.setOnClickListener(this);
+        mPlus10seconds.setOnClickListener(this);
     }
 
     private void setPlayerViewDimensionsForLandScapeMode() {
