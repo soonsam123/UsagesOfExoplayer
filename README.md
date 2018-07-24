@@ -71,7 +71,7 @@ In ComplexActivity you can choose what you want to do. These are some more compl
 
 <img src="https://github.com/soonsam123/UsagesOfExoplayer/blob/master/pictures/complex_page.png" width="280" height="449"/>
 
-1. Play a single video: 
+## 1. Play a single video: 
   - Play a mp4 or DASH video from the internet with fully player layout customization; 
   - Custom buttons in the player; 
   - Shows when the video is buffering or playing (listen to the player states);
@@ -122,9 +122,11 @@ Look at my [exo_playback_control_view.xml](https://github.com/soonsam123/UsagesO
 When there is no media yet (STATE_IDLE): 
   - Show the progressBar;
   - Hide the player controllers.
+  
 When video is buffering (STATE_BUFFERING):
   - Show the progressBar;
   - Hide the play/pause button. (because this button is in the middle in the same place where the progressBar is placed)
+  
 When video is ready to go (STATE_READY):
   - Dismiss the progressBar;
   - Show the play/pause button.
@@ -154,7 +156,7 @@ private class PlayerEventListener extends Player.DefaultEventListener{
         }
 ```
 
-2. Play a video with Ads;
+## 2. Play a video with Ads;
 
 **First**, Create a ImaAdsLoader instance in onCreate method.
 
