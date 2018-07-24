@@ -1,6 +1,5 @@
 package com.soon.karat.exoplayer.simple_examples;
 
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -64,12 +63,14 @@ import com.soon.karat.exoplayer.R;
  * so this is not a problem.
  * </p>
  * To summarize:
- * --> In Android version 6.0 and earlier, stop the player in the {@link #onPause()} callback.
- * --> In Android version 7.0 and later, stop the player in the {@link #onStop()} callback.
+ * <ul>
+ *      <li>In Android version 6.0 and earlier, stop the player in the {@link #onPause()} callback.</li>
+ *      <li>In Android version 7.0 and later, stop the player in the {@link #onStop()} callback.</li>
+ * </ul>
  */
 public class VideoPlayerActivity extends AppCompatActivity {
 
-    private Uri videoUri;
+    private PlayerView mPlayerView;
     private SimpleExoPlayer player;
     private DefaultTrackSelector trackSelector;
 
@@ -78,10 +79,7 @@ public class VideoPlayerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_video_player);
 
-        // 1. Get the video URI from MainActivity.
-        Intent intent = getIntent();
-        videoUri = Uri.parse(intent.getStringExtra("videoUri"));
-
+        mPlayerView = findViewById(R.id.player_view);
 
     }
 
@@ -132,7 +130,6 @@ public class VideoPlayerActivity extends AppCompatActivity {
         player = ExoPlayerFactory.newSimpleInstance(this, trackSelector);
 
         // 3. Attach the player to a view
-        PlayerView mPlayerView = findViewById(R.id.player_view);
         mPlayerView.setPlayer(player);
 
         // 4. Preparing the player
@@ -145,7 +142,7 @@ public class VideoPlayerActivity extends AppCompatActivity {
 
         // 4.3. This is the MediaSource representing the media to be played.
         MediaSource videoSource = new ExtractorMediaSource.Factory(dataSourceFactory)
-                .createMediaSource(videoUri);
+                .createMediaSource(Uri.parse(getString(R.string.video_mp4_toy_story)));
 
         // 4.4. Prepare the player with the source
         player.prepare(videoSource);

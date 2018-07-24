@@ -68,6 +68,11 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent">
 
+        <ImageButton android:id="@id/exo_prev"
+            style="@style/ExoMediaButton.Previous"
+            android:background="@drawable/btn_play_pause"
+            tools:ignore="ContentDescription"/>
+
         <ImageButton android:id="@id/exo_play"
             style="@style/ExoMediaButton.Play"
             android:background="@drawable/btn_play_pause"
@@ -77,6 +82,11 @@
             style="@style/ExoMediaButton.Pause"
             android:background="@drawable/btn_play_pause"
             tools:ignore="ContentDescription"/>
+
+        <ImageButton android:id="@id/exo_next"
+            style="@style/ExoMediaButton.Next"
+            android:background="@drawable/btn_play_pause"
+            tools:ignore="ContentDescription" />
 
     </LinearLayout>
 

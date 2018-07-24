@@ -16,6 +16,7 @@
     </style>
     -->
 
+    <!-- The top bar color will become black to follow the player background black color -->
     <style name="PlayerActivityTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimaryDark">@color/colorBlack</item>
     </style>

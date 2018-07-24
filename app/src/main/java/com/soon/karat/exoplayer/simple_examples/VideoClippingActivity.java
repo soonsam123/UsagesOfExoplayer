@@ -1,6 +1,5 @@
 package com.soon.karat.exoplayer.simple_examples;
 
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -25,7 +24,7 @@ import com.soon.karat.exoplayer.R;
 
 public class VideoClippingActivity extends AppCompatActivity {
 
-    private Uri videoUri;
+    private PlayerView mPlayerView;
     private SimpleExoPlayer player;
     private TrackSelector trackSelector;
 
@@ -34,9 +33,7 @@ public class VideoClippingActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_video_player);
 
-        // 1. Get the Uri of the video from MainActivity.
-        Intent intent = getIntent();
-        videoUri = Uri.parse(intent.getStringExtra("videoUri"));
+        mPlayerView = findViewById(R.id.player_view);
 
     }
 
@@ -84,7 +81,6 @@ public class VideoClippingActivity extends AppCompatActivity {
 
         player = ExoPlayerFactory.newSimpleInstance(this, trackSelector);
 
-        PlayerView mPlayerView = findViewById(R.id.player_view);
         mPlayerView.setPlayer(player);
 
         DefaultBandwidthMeter defaultBandwidthMeter = new DefaultBandwidthMeter();
@@ -94,7 +90,7 @@ public class VideoClippingActivity extends AppCompatActivity {
 
         // Create the MediaSource of the video we choose. This is the whole video.
         MediaSource videoSource = new ExtractorMediaSource.Factory(dataSourceFactory)
-                .createMediaSource(videoUri);
+                .createMediaSource(Uri.parse(getString(R.string.video_mp4_toy_story)));
 
         // Take only from 00:10 to 00:15 seconds of the video (5 seconds total).
         ClippingMediaSource clippingSource = new ClippingMediaSource(
@@ -104,7 +100,6 @@ public class VideoClippingActivity extends AppCompatActivity {
 
         player.prepare(clippingSource);
         player.setPlayWhenReady(true);
-
 
     }
 

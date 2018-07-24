@@ -39,10 +39,19 @@ import com.google.android.exoplayer2.ui.TrackSelectionView;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
+import com.google.android.exoplayer2.util.ErrorMessageProvider;
 import com.google.android.exoplayer2.util.Util;
 import com.soon.karat.exoplayer.R;
 import com.soon.karat.exoplayer.ThumbNailPlayerView;
 
+/**
+ * The code in this file was based on the ExoPlayer demo app, you can find it in
+ * their github repository here:
+ * https://github.com/google/ExoPlayer
+ * <p>
+ * The explanation for the code in this file is in this repository's README, you can find it here:
+ * https://github.com/soonsam123/UsagesOfExoplayer
+ */
 public class PlayerActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final String TAG = "PlayerActivity";
@@ -97,7 +106,6 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
 
     @Override
     protected void onNewIntent(Intent intent) {
-        Log.i(TAG, "onNewIntent: Running onNewIntent");
         releasePlayer();
         clearStartPosition();
         setIntent(intent);
@@ -148,9 +156,6 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         outState.putBoolean(KEY_AUTO_PLAY, startAutoPlay);
         outState.putInt(KEY_WINDOW, startWindow);
         outState.putLong(KEY_POSITION, startPosition);
-        Log.i(TAG, "onSaveInstanceState: Saving AUTO_PLAY: " + startAutoPlay);
-        Log.i(TAG, "onSaveInstanceState: Saving WINDOW: " + startWindow);
-        Log.i(TAG, "onSaveInstanceState: Saving POSITION: " + startPosition);
     }
 
     @Override
@@ -171,16 +176,15 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         }
         if (v.getParent() == debugRootView) {
             MappedTrackInfo mappedTrackInfo = trackSelector.getCurrentMappedTrackInfo();
-            if (mappedTrackInfo != null) { Log.i("Debugging", "onClick: mappedTrackInfo: " + mappedTrackInfo.toString());
-                CharSequence title = ((Button) v).getText(); Log.i("Debugging", "onClick: title: " + title);
-                int rendererIndex = (int) v.getTag(); Log.i("Debugging", "onClick: rendererIndex: " + rendererIndex);
-                int rendererType = mappedTrackInfo.getRendererType(rendererIndex); Log.i("Debugging", "onClick: rendererType: " + rendererType);
+            if (mappedTrackInfo != null) {
+                CharSequence title = ((Button) v).getText();
+                int rendererIndex = (int) v.getTag();
+                int rendererType = mappedTrackInfo.getRendererType(rendererIndex);
                 boolean allowAdaptiveSelections =
                         rendererType == C.TRACK_TYPE_VIDEO ||
                                 (rendererType == C.TRACK_TYPE_AUDIO
                                         && mappedTrackInfo.getTypeSupport(C.TRACK_TYPE_VIDEO)
                                         == MappedTrackInfo.RENDERER_SUPPORT_NO_TRACKS);
-                Log.i("Debugging", "onClick: allowAdaptiveSelections: " + allowAdaptiveSelections);
                 Pair<AlertDialog, TrackSelectionView> dialogPair =
                         TrackSelectionView.getDialog(this, title, trackSelector, rendererIndex);
                 dialogPair.second.setShowDisableOption(true);
@@ -194,7 +198,6 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            Log.i(TAG, "onConfigurationChanged: Configuration is changing to LandScape");
             setPlayerViewDimensionsForLandScapeMode();
 
         } else {
@@ -205,6 +208,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
     private void setupWidgets() {
 
         mPlayerView = findViewById(R.id.player_view);
+        mPlayerView.setErrorMessageProvider(new PlayerErrorMessageProvider());
 
         mBack = findViewById(R.id.image_button_back);
         mLike = findViewById(R.id.image_button_like);
@@ -277,7 +281,6 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
 
     private void releasePlayer() {
         if (player != null) {
-            Log.i(TAG, "releasePlayer: Releasing Player");
             updateStartPosition();
             player.removeListener(new PlayerEventListener());
             player.addVideoListener(null); // Is it necessary to remove these listeners? afraid of memory leak. OOM
@@ -335,34 +338,27 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
     private void updateButtonVisibilities() {
         debugRootView.removeAllViews();
         if (player == null) {
-            Log.i("Debugging", "updateButtonVisibilities: player == null");
             return;
         }
 
         MappedTrackInfo mappedTrackInfo = trackSelector.getCurrentMappedTrackInfo();
         if (mappedTrackInfo == null) {
-            Log.i("Debugging", "updateButtonVisibilities: mappedTrackInfo == null");
             return;
         }
 
         for (int i = 0; i < mappedTrackInfo.getRendererCount(); i++) {
-            Log.i("Debugging", "updateButtonVisibilities: Iterating: " + i);
             TrackGroupArray trackGroups = mappedTrackInfo.getTrackGroups(i);
             if (trackGroups.length != 0) {
-                Log.i("Debugging", "updateButtonVisibilities: trackGroups: " + trackGroups.toString() + " - trackGroups.length: " + trackGroups.length);
                 Button button = new Button(this);
                 int label;
                 switch (player.getRendererType(i)) {
                     case C.TRACK_TYPE_AUDIO:
-                        Log.i("Debugging", "updateButtonVisibilities: Type Audio");
                         label = R.string.track_selection_audio;
                         break;
                     case C.TRACK_TYPE_VIDEO:
-                        Log.i("Debugging", "updateButtonVisibilities: Type Video");
                         label = R.string.track_selection_video;
                         break;
                     case C.TRACK_TYPE_TEXT:
-                        Log.i("Debugging", "updateButtonVisibilities: Type Text");
                         label = R.string.track_selection_text;
                         break;
                     default:
@@ -372,8 +368,6 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
                 button.setTag(i);
                 button.setOnClickListener(this);
                 debugRootView.addView(button);
-                Log.i("Debugging", "updateButtonVisibilities: debutRootView: " + debugRootView.toString());
-                Log.i("Debugging", "updateButtonVisibilities: debutRootView Size: " + debugRootView.getChildCount());
             }
         }
     }
@@ -405,7 +399,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
                     stateString = "UNKNOWN_STATE";
                     break;
             }
-            Log.i("Debugging", "onPlayerStateChanged: Changed to State: " + stateString + " - startAutoPlay: " + playWhenReady);
+            Log.i(TAG, "onPlayerStateChanged: Changed to State: " + stateString + " - startAutoPlay: " + playWhenReady);
             updateButtonVisibilities();
         }
 
@@ -421,9 +415,7 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
 
         @Override
         public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
-            Log.i("Debugging", "onTracksChanged: Track is changing");
             updateButtonVisibilities();
-            // It seems it handle errors.
             if (trackGroups != lastSeenTrackGroupArray) {
                 MappedTrackInfo mappedTrackInfo = trackSelector.getCurrentMappedTrackInfo();
                 if (mappedTrackInfo != null) {
@@ -440,4 +432,14 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
             }
         }
     }
+
+    private class PlayerErrorMessageProvider implements ErrorMessageProvider<ExoPlaybackException> {
+
+        @Override
+        public Pair<Integer, String> getErrorMessage(ExoPlaybackException throwable) {
+            String errorString = "Playback Error DEBUGGING THIS ERROR";
+            return Pair.create(0, errorString);
+        }
+    }
+
 }

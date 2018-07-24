@@ -1,6 +1,5 @@
 package com.soon.karat.exoplayer.simple_examples;
 
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -25,8 +24,7 @@ import com.soon.karat.exoplayer.R;
 
 public class VideoLoopingActivity extends AppCompatActivity {
 
-    private Uri videoUri;
-
+    private PlayerView mPlayerView;
     private SimpleExoPlayer player;
     private TrackSelector trackSelector;
 
@@ -35,9 +33,7 @@ public class VideoLoopingActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_video_player);
 
-        // 1. Get the Uri of the video from MainActivity.
-        Intent intent = getIntent();
-        videoUri = Uri.parse(intent.getStringExtra("videoUri"));
+        mPlayerView = findViewById(R.id.player_view);
 
     }
 
@@ -85,7 +81,6 @@ public class VideoLoopingActivity extends AppCompatActivity {
 
         player = ExoPlayerFactory.newSimpleInstance(this, trackSelector);
 
-        PlayerView mPlayerView = findViewById(R.id.player_view);
         mPlayerView.setPlayer(player);
 
         DefaultBandwidthMeter defaultBandwidthMeter = new DefaultBandwidthMeter();
@@ -94,7 +89,8 @@ public class VideoLoopingActivity extends AppCompatActivity {
                 Util.getUserAgent(this, getString(R.string.app_name)), defaultBandwidthMeter);
 
         // Create the MediaSource of the video we choose.
-        MediaSource videoSource = new ExtractorMediaSource.Factory(dataSourceFactory).createMediaSource(videoUri);
+        MediaSource videoSource = new ExtractorMediaSource.Factory(dataSourceFactory)
+                .createMediaSource(Uri.parse(getString(R.string.video_mp4_toy_story)));
 
         // Play this video 5 times.
         LoopingMediaSource loopingMediaSource = new LoopingMediaSource(videoSource, 5);

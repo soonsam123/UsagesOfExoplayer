@@ -67,7 +67,7 @@
     </RadioGroup>
 
     <android.support.v7.widget.AppCompatButton
-        android:id="@+id/button_pick_video"
+        android:id="@+id/button_play_video"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="40dp"
@@ -75,7 +75,7 @@
         android:layout_marginTop="40dp"
         android:background="@drawable/stroke_button"
         android:padding="10dp"
-        android:text="@string/action_pick_a_video"
+        android:text="@string/action_play_a_video"
         android:textColor="@color/colorWhite" />
 
 </LinearLayout>

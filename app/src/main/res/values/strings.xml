@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Exoplayer</string>
 
-    <string name="action_pick_a_video">Pick a video</string>
+    <string name="action_play_a_video">Play a video</string>
     <string name="action_verify">Verify</string>
     <string name="action_not_now">Not now</string>
     <string name="action_play_a_single_video">Play a single video</string>
